@@ -1,0 +1,33 @@
+name: HeadTracker
+options:
+  bundleIdPrefix: com.pratikaman
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+targets:
+  HeadTracker:
+    type: application
+    platform: macOS
+    sources: [HeadTracker]
+    info:
+      path: HeadTracker/Info.plist
+      properties:
+        NSMotionUsageDescription: HeadTracker reads your AirPods' motion sensors to show your head orientation in real time.
+        LSMinimumSystemVersion: "14.0"
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+    settings:
+      base:
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "-"
+        SWIFT_VERSION: "5.0"
+        ENABLE_HARDENED_RUNTIME: NO
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: HeadTracker/Info.plist
+schemes:
+  HeadTracker:
+    build:
+      targets:
+        HeadTracker: all
+    run:
+      config: Debug
