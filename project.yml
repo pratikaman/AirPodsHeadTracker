@@ -12,6 +12,7 @@ targets:
     info:
       path: HeadTracker/Info.plist
       properties:
+        CFBundleIconFile: AppIcon
         NSMotionUsageDescription: HeadTracker reads your AirPods' motion sensors to show your head orientation in real time.
         LSMinimumSystemVersion: "14.0"
         CFBundleShortVersionString: "1.0"

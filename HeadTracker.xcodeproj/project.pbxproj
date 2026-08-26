@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		269A0A4D59AD133821D46468 /* HeadTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87086E1D9E1D949306CE50AE /* HeadTrackerApp.swift */; };
+		299DBF2754CCF3D3B659E772 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 5E89D08C253C9C5ECA798E5B /* AppIcon.icns */; };
 		2FCA4FF60CCED23F29493C47 /* HeadScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 230AB7E5BC8B023BC42A3545 /* HeadScene.swift */; };
 		AB6C34430623CA7775EF8A34 /* MotionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D84A98987CF68D53BF82501 /* MotionManager.swift */; };
 		F0FAFFCA26ED213B27525B77 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C6F4828E3EB2913CA05956 /* ContentView.swift */; };
@@ -17,6 +18,7 @@
 		230AB7E5BC8B023BC42A3545 /* HeadScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadScene.swift; sourceTree = "<group>"; };
 		433B57C9A5B1B2FDE07CAA68 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		57C6F4828E3EB2913CA05956 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		5E89D08C253C9C5ECA798E5B /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		7B8D04283334869DB57CE527 /* HeadTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HeadTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		87086E1D9E1D949306CE50AE /* HeadTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadTrackerApp.swift; sourceTree = "<group>"; };
 		8D84A98987CF68D53BF82501 /* MotionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionManager.swift; sourceTree = "<group>"; };
@@ -42,6 +44,7 @@
 		9921C0CED49D148D1431D511 /* HeadTracker */ = {
 			isa = PBXGroup;
 			children = (
+				5E89D08C253C9C5ECA798E5B /* AppIcon.icns */,
 				57C6F4828E3EB2913CA05956 /* ContentView.swift */,
 				230AB7E5BC8B023BC42A3545 /* HeadScene.swift */,
 				87086E1D9E1D949306CE50AE /* HeadTrackerApp.swift */,
@@ -59,6 +62,7 @@
 			buildConfigurationList = 2126F0B1CE4422F27F7F8D01 /* Build configuration list for PBXNativeTarget "HeadTracker" */;
 			buildPhases = (
 				7453BCB2E25FAAD373A18B5F /* Sources */,
+				193B3C9B53FA11427B06A087 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -103,6 +107,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		193B3C9B53FA11427B06A087 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				299DBF2754CCF3D3B659E772 /* AppIcon.icns in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		7453BCB2E25FAAD373A18B5F /* Sources */ = {
