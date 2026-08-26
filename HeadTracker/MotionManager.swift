@@ -23,6 +23,8 @@ final class MotionManager: NSObject, ObservableObject, CMHeadphoneMotionManagerD
     @Published private(set) var roll: Double = 0
     @Published private(set) var sampleRate: Double = 0
     @Published private(set) var lastSample: Date?
+    @Published private(set) var authDescription: String = ""
+    @Published private(set) var lastError: String?
 
     private let manager = CMHeadphoneMotionManager()
     private var baseline: simd_quatf?
@@ -34,6 +36,7 @@ final class MotionManager: NSObject, ObservableObject, CMHeadphoneMotionManagerD
     }
 
     func start() {
+        refreshAuth()
         guard manager.isDeviceMotionAvailable else {
             status = .unavailable
             return
@@ -45,15 +48,29 @@ final class MotionManager: NSObject, ObservableObject, CMHeadphoneMotionManagerD
         status = .waiting
         manager.startDeviceMotionUpdates(to: .main) { [weak self] motion, error in
             guard let self else { return }
+            self.refreshAuth()
             if let error = error as NSError? {
+                self.lastError = "\(error.domain) \(error.code): \(error.localizedDescription)"
                 // CMErrorMotionActivityNotAuthorized == 105
-                if error.domain == CMErrorDomain, error.code == 105 {
+                if CMHeadphoneMotionManager.authorizationStatus() == .denied
+                    || (error.domain == CMErrorDomain && error.code == 105) {
                     self.status = .denied
                 }
                 return
             }
             guard let motion else { return }
+            self.lastError = nil
             self.handle(motion)
+        }
+    }
+
+    private func refreshAuth() {
+        switch CMHeadphoneMotionManager.authorizationStatus() {
+        case .notDetermined: authDescription = "not determined (no prompt answered yet)"
+        case .restricted: authDescription = "restricted"
+        case .denied: authDescription = "denied"
+        case .authorized: authDescription = "authorized"
+        @unknown default: authDescription = "unknown"
         }
     }
 

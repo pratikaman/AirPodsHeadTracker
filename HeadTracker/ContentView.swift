@@ -15,6 +15,9 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             statusBar
+            if motion.status != .streaming || stale {
+                diagnostics
+            }
             Divider()
 
             SceneView(scene: headScene.scene, options: [])
@@ -79,6 +82,19 @@ struct ContentView: View {
                 ? "Stream paused — are the AirPods still in your ears and connected to this Mac?"
                 : String(format: "Streaming at %.0f Hz", motion.sampleRate)
         }
+    }
+
+    private var diagnostics: some View {
+        HStack {
+            Text("Motion permission: \(motion.authDescription)"
+                 + (motion.lastError.map { "  ·  \($0)" } ?? ""))
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .textSelection(.enabled)
+            Spacer()
+        }
+        .padding(.horizontal, 12)
+        .padding(.bottom, 6)
     }
 
     // MARK: - Numbers
