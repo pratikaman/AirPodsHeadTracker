@@ -165,6 +165,24 @@ struct PostureView: View {
                 .frame(width: 110)
                 .disabled(!posture.soundEnabled)
             }
+            HStack {
+                Toggle("Spoken nudges", isOn: $posture.speechEnabled)
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                Spacer()
+                Button {
+                    posture.speakNudge()
+                } label: {
+                    Image(systemName: "play.circle")
+                }
+                .buttonStyle(.borderless)
+                .help("Preview")
+                .disabled(!posture.speechEnabled)
+            }
+            TextField("What should it say?", text: $posture.speechText)
+                .textFieldStyle(.roundedBorder)
+                .controlSize(.small)
+                .disabled(!posture.speechEnabled)
         }
     }
 

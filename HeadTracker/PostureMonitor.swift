@@ -2,6 +2,7 @@ import Foundation
 import Combine
 import UserNotifications
 import AppKit
+import AVFoundation
 
 /// Watches gravity-referenced neck tilt, accumulates daily upright/slouch time,
 /// and nudges with a notification after sustained slouching.
@@ -27,6 +28,13 @@ final class PostureMonitor: NSObject, ObservableObject, UNUserNotificationCenter
             defaults.set(soundName, forKey: "posture.soundName")
             NSSound(named: soundName)?.play()
         }
+    }
+    @Published var speechEnabled: Bool {
+        didSet { defaults.set(speechEnabled, forKey: "posture.speechEnabled") }
+    }
+    /// Custom phrase spoken (TTS) as the nudge.
+    @Published var speechText: String {
+        didSet { defaults.set(speechText, forKey: "posture.speechText") }
     }
     /// Degrees of down-tilt beyond the calibrated neutral that counts as slouching.
     @Published var thresholdDegrees: Double {
@@ -86,6 +94,8 @@ final class PostureMonitor: NSObject, ObservableObject, UNUserNotificationCenter
         nudgesEnabled = defaults.object(forKey: "posture.nudgesEnabled") as? Bool ?? true
         soundEnabled = defaults.object(forKey: "posture.soundEnabled") as? Bool ?? true
         soundName = defaults.string(forKey: "posture.soundName") ?? "Glass"
+        speechEnabled = defaults.object(forKey: "posture.speechEnabled") as? Bool ?? true
+        speechText = defaults.string(forKey: "posture.speechText") ?? "Sit up straight."
         thresholdDegrees = defaults.object(forKey: "posture.threshold") as? Double ?? 15
         nudgeAfterSeconds = defaults.object(forKey: "posture.nudgeAfter") as? Double ?? 60
         referenceDegrees = defaults.object(forKey: "posture.reference") as? Double
@@ -123,7 +133,7 @@ final class PostureMonitor: NSObject, ObservableObject, UNUserNotificationCenter
         }
         lastSampleAt = now
 
-        if nudgesEnabled || soundEnabled, isSlouching,
+        if nudgesEnabled || soundEnabled || speechEnabled, isSlouching,
            let start = slouchStartedAt,
            now.timeIntervalSince(start) >= nudgeAfterSeconds,
            now.timeIntervalSince(lastNudgeAt ?? .distantPast) >= nudgeAfterSeconds {
@@ -220,11 +230,30 @@ final class PostureMonitor: NSObject, ObservableObject, UNUserNotificationCenter
         "Frog", "Funk", "Hero", "Morse", "Submarine", "Sosumi", "Basso",
     ]
 
+    private let speech = AVSpeechSynthesizer()
+
+    /// Speaks the configured nudge phrase. Also used as the preview button.
+    func speakNudge() {
+        speech.stopSpeaking(at: .immediate)
+        let text = speechText.trimmingCharacters(in: .whitespacesAndNewlines)
+        speech.speak(AVSpeechUtterance(string: text.isEmpty ? "Sit up straight." : text))
+    }
+
     private func sendNudge(after seconds: TimeInterval) {
         nudgeCount += 1
         flush()
         if soundEnabled {
             NSSound(named: soundName)?.play()
+        }
+        if speechEnabled {
+            if soundEnabled {
+                // Let the chime ring first, then speak.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
+                    self?.speakNudge()
+                }
+            } else {
+                speakNudge()
+            }
         }
         guard nudgesEnabled else { return }
         let content = UNMutableNotificationContent()
