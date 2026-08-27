@@ -10,8 +10,6 @@
 		269A0A4D59AD133821D46468 /* HeadTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87086E1D9E1D949306CE50AE /* HeadTrackerApp.swift */; };
 		299DBF2754CCF3D3B659E772 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 5E89D08C253C9C5ECA798E5B /* AppIcon.icns */; };
 		2FCA4FF60CCED23F29493C47 /* HeadScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 230AB7E5BC8B023BC42A3545 /* HeadScene.swift */; };
-		4BD750400D334A8F2350EBF6 /* PostureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64A1E431BA98456678105CE9 /* PostureView.swift */; };
-		812308745CCCA02BBB830985 /* PostureMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB165392DDD5BB698910B08C /* PostureMonitor.swift */; };
 		AB6C34430623CA7775EF8A34 /* MotionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D84A98987CF68D53BF82501 /* MotionManager.swift */; };
 		F0FAFFCA26ED213B27525B77 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C6F4828E3EB2913CA05956 /* ContentView.swift */; };
 /* End PBXBuildFile section */
@@ -21,11 +19,9 @@
 		433B57C9A5B1B2FDE07CAA68 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		57C6F4828E3EB2913CA05956 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		5E89D08C253C9C5ECA798E5B /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
-		64A1E431BA98456678105CE9 /* PostureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostureView.swift; sourceTree = "<group>"; };
 		7B8D04283334869DB57CE527 /* HeadTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HeadTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		87086E1D9E1D949306CE50AE /* HeadTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadTrackerApp.swift; sourceTree = "<group>"; };
 		8D84A98987CF68D53BF82501 /* MotionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionManager.swift; sourceTree = "<group>"; };
-		AB165392DDD5BB698910B08C /* PostureMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostureMonitor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -54,8 +50,6 @@
 				87086E1D9E1D949306CE50AE /* HeadTrackerApp.swift */,
 				433B57C9A5B1B2FDE07CAA68 /* Info.plist */,
 				8D84A98987CF68D53BF82501 /* MotionManager.swift */,
-				AB165392DDD5BB698910B08C /* PostureMonitor.swift */,
-				64A1E431BA98456678105CE9 /* PostureView.swift */,
 			);
 			path = HeadTracker;
 			sourceTree = "<group>";
@@ -134,8 +128,6 @@
 				2FCA4FF60CCED23F29493C47 /* HeadScene.swift in Sources */,
 				269A0A4D59AD133821D46468 /* HeadTrackerApp.swift in Sources */,
 				AB6C34430623CA7775EF8A34 /* MotionManager.swift in Sources */,
-				812308745CCCA02BBB830985 /* PostureMonitor.swift in Sources */,
-				4BD750400D334A8F2350EBF6 /* PostureView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
