@@ -1,6 +1,7 @@
 import CoreMotion
 import simd
 import Foundation
+import Combine
 
 /// Wraps CMHeadphoneMotionManager and publishes head orientation relative to a
 /// user-settable baseline ("recenter").
@@ -26,16 +27,28 @@ final class MotionManager: NSObject, ObservableObject, CMHeadphoneMotionManagerD
     @Published private(set) var authDescription: String = ""
     @Published private(set) var lastError: String?
 
+    /// Posture tracking, fed from the same sample stream.
+    let posture = PostureMonitor()
+
     private let manager = CMHeadphoneMotionManager()
     private var baseline: simd_quatf?
     private var rateWindow: [Date] = []
+    private var started = false
+    private var postureForward: AnyCancellable?
 
     override init() {
         super.init()
         manager.delegate = self
+        // Re-publish nested changes so views observing MotionManager (and the
+        // menu bar label) update when posture state changes.
+        postureForward = posture.objectWillChange.sink { [weak self] _ in
+            self?.objectWillChange.send()
+        }
     }
 
     func start() {
+        if started { return }
+        started = true
         refreshAuth()
         guard manager.isDeviceMotionAvailable else {
             status = .unavailable
@@ -76,6 +89,7 @@ final class MotionManager: NSObject, ObservableObject, CMHeadphoneMotionManagerD
 
     func stop() {
         manager.stopDeviceMotionUpdates()
+        started = false
         status = .idle
         baseline = nil
         rateWindow.removeAll()
@@ -136,5 +150,14 @@ final class MotionManager: NSObject, ObservableObject, CMHeadphoneMotionManagerD
         rateWindow.append(now)
         rateWindow.removeAll { now.timeIntervalSince($0) > 1.0 }
         sampleRate = Double(rateWindow.count)
+
+        // Posture: gravity-referenced down-tilt. Gravity is absolute, so this
+        // ignores the recenter baseline and is immune to yaw drift.
+        // Head frame: +Z out of the face; looking down tips gravity toward +Z.
+        let g = motion.gravity
+        posture.update(
+            rawDownDegrees: asin(max(-1.0, min(1.0, g.z))) * rad2deg,
+            at: now
+        )
     }
 }

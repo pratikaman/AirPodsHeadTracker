@@ -27,6 +27,24 @@ stream never starts.
 The project file is generated with [xcodegen](https://github.com/yonaskolb/XcodeGen)
 from `project.yml`; if you change the file layout, re-run `xcodegen generate`.
 
+## Posture coach
+
+The menu bar item (brain icon) is a "tech neck" coach driven by the same
+sensor stream. Down-tilt is measured against gravity, so it's absolute and
+immune to the yaw drift that affects the 3D view.
+
+1. Sit tall, look at your screen, open the menu bar popover and click
+   **Set Upright Posture** once.
+2. When you stay tilted past the threshold (default 15°) for longer than the
+   delay (default 60s), you get a notification nudge — and again at the same
+   interval while you stay slouched. The menu bar icon shows the current
+   down-tilt while you're slouching.
+3. The popover tracks upright vs slouched time per day (last 7 days shown).
+   Time only accumulates while the buds are in and streaming.
+
+Threshold, delay, and nudges are configurable in the popover. Notifications
+need one-time approval (System Settings › Notifications if you declined).
+
 ## Using it
 
 - The head model follows yours at ~25 Hz (the fixed rate Apple delivers).
