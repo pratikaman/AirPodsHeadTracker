@@ -31,16 +31,25 @@ struct PostureView: View {
     private var header: some View {
         HStack(spacing: 8) {
             Circle()
-                .fill(streaming ? (posture.isSlouching ? .red : .green) : .gray)
+                .fill(posture.isPaused ? .gray
+                      : streaming ? (posture.isSlouching ? .red : .green) : .gray)
                 .frame(width: 9, height: 9)
             Text(headerText)
                 .font(.callout)
                 .lineLimit(1)
             Spacer()
+            Button {
+                posture.isPaused.toggle()
+            } label: {
+                Image(systemName: posture.isPaused ? "play.fill" : "pause.fill")
+            }
+            .buttonStyle(.borderless)
+            .help(posture.isPaused ? "Resume monitoring" : "Pause monitoring")
         }
     }
 
     private var headerText: String {
+        if posture.isPaused { return "Paused" }
         guard streaming else { return "Waiting for AirPods motion…" }
         let deg = Int(posture.tiltDegrees.rounded())
         if posture.isSlouching, let start = posture.slouchStartedAt {
@@ -148,22 +157,6 @@ struct PostureView: View {
                     .font(.caption)
                     .monospacedDigit()
                     .frame(width: 52, alignment: .trailing)
-            }
-            Toggle("Notification nudges", isOn: $posture.nudgesEnabled)
-                .toggleStyle(.switch)
-                .controlSize(.small)
-            HStack {
-                Toggle("Sound nudges", isOn: $posture.soundEnabled)
-                    .toggleStyle(.switch)
-                    .controlSize(.small)
-                Spacer()
-                Picker("", selection: $posture.soundName) {
-                    ForEach(PostureMonitor.systemSounds, id: \.self) { Text($0) }
-                }
-                .labelsHidden()
-                .controlSize(.small)
-                .frame(width: 110)
-                .disabled(!posture.soundEnabled)
             }
             HStack {
                 Toggle("Spoken nudges", isOn: $posture.speechEnabled)

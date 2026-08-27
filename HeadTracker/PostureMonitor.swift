@@ -1,34 +1,16 @@
 import Foundation
 import Combine
-import UserNotifications
-import AppKit
 import AVFoundation
 
 /// Watches gravity-referenced neck tilt, accumulates daily upright/slouch time,
-/// and nudges with a notification after sustained slouching.
+/// and speaks a nudge (TTS) after sustained slouching.
 ///
 /// Down-tilt comes from the gravity vector, so it is absolute and immune to the
 /// yaw drift that affects the 3D view — the right signal for posture.
-final class PostureMonitor: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
+final class PostureMonitor: ObservableObject {
 
     // MARK: Settings (persisted)
 
-    @Published var nudgesEnabled: Bool {
-        didSet {
-            defaults.set(nudgesEnabled, forKey: "posture.nudgesEnabled")
-            if nudgesEnabled { requestNotificationAuth() }
-        }
-    }
-    @Published var soundEnabled: Bool {
-        didSet { defaults.set(soundEnabled, forKey: "posture.soundEnabled") }
-    }
-    /// System sound used for sound nudges. Changing it plays a preview.
-    @Published var soundName: String {
-        didSet {
-            defaults.set(soundName, forKey: "posture.soundName")
-            NSSound(named: soundName)?.play()
-        }
-    }
     @Published var speechEnabled: Bool {
         didSet { defaults.set(speechEnabled, forKey: "posture.speechEnabled") }
     }
@@ -46,6 +28,18 @@ final class PostureMonitor: NSObject, ObservableObject, UNUserNotificationCenter
     }
     /// Raw down-tilt captured while sitting tall. nil until first calibration.
     @Published private(set) var referenceDegrees: Double?
+
+    // MARK: Session state
+
+    /// While paused the gauge stays live, but nothing is counted and no nudges
+    /// fire. Not persisted — a fresh launch always starts running.
+    @Published var isPaused = false {
+        didSet {
+            isSlouching = false
+            slouchStartedAt = nil
+            lastSampleAt = nil
+        }
+    }
 
     // MARK: Live state
 
@@ -76,6 +70,7 @@ final class PostureMonitor: NSObject, ObservableObject, UNUserNotificationCenter
     // MARK: Internals
 
     private let defaults = UserDefaults.standard
+    private let speech = AVSpeechSynthesizer()
     private var lastSampleAt: Date?
     private var lastNudgeAt: Date?
     private var lastFlushAt = Date.distantPast
@@ -90,20 +85,14 @@ final class PostureMonitor: NSObject, ObservableObject, UNUserNotificationCenter
         return f
     }()
 
-    override init() {
-        nudgesEnabled = defaults.object(forKey: "posture.nudgesEnabled") as? Bool ?? true
-        soundEnabled = defaults.object(forKey: "posture.soundEnabled") as? Bool ?? true
-        soundName = defaults.string(forKey: "posture.soundName") ?? "Glass"
+    init() {
         speechEnabled = defaults.object(forKey: "posture.speechEnabled") as? Bool ?? true
         speechText = defaults.string(forKey: "posture.speechText") ?? "Sit up straight."
         thresholdDegrees = defaults.object(forKey: "posture.threshold") as? Double ?? 15
         nudgeAfterSeconds = defaults.object(forKey: "posture.nudgeAfter") as? Double ?? 60
         referenceDegrees = defaults.object(forKey: "posture.reference") as? Double
         dayKey = Self.dayFormatter.string(from: Date())
-        super.init()
         loadToday()
-        UNUserNotificationCenter.current().delegate = self
-        if nudgesEnabled { requestNotificationAuth() }
     }
 
     // MARK: Sample intake (called at ~25 Hz from MotionManager)
@@ -111,6 +100,8 @@ final class PostureMonitor: NSObject, ObservableObject, UNUserNotificationCenter
     func update(rawDownDegrees raw: Double, at now: Date) {
         rawDownDegrees = raw
         tiltDegrees = raw - (referenceDegrees ?? 0)
+
+        guard !isPaused else { return }
 
         rolloverIfNeeded(now)
 
@@ -133,12 +124,14 @@ final class PostureMonitor: NSObject, ObservableObject, UNUserNotificationCenter
         }
         lastSampleAt = now
 
-        if nudgesEnabled || soundEnabled || speechEnabled, isSlouching,
+        if speechEnabled, isSlouching,
            let start = slouchStartedAt,
            now.timeIntervalSince(start) >= nudgeAfterSeconds,
            now.timeIntervalSince(lastNudgeAt ?? .distantPast) >= nudgeAfterSeconds {
             lastNudgeAt = now
-            sendNudge(after: now.timeIntervalSince(start))
+            nudgeCount += 1
+            flush()
+            speakNudge()
         }
 
         if now.timeIntervalSince(lastFlushAt) > 15 {
@@ -153,6 +146,13 @@ final class PostureMonitor: NSObject, ObservableObject, UNUserNotificationCenter
         defaults.set(rawDownDegrees, forKey: "posture.reference")
         isSlouching = false
         slouchStartedAt = nil
+    }
+
+    /// Speaks the configured nudge phrase. Also used as the preview button.
+    func speakNudge() {
+        speech.stopSpeaking(at: .immediate)
+        let text = speechText.trimmingCharacters(in: .whitespacesAndNewlines)
+        speech.speak(AVSpeechUtterance(string: text.isEmpty ? "Sit up straight." : text))
     }
 
     // MARK: History
@@ -216,61 +216,5 @@ final class PostureMonitor: NSObject, ObservableObject, UNUserNotificationCenter
             }
         }
         defaults.set(dict, forKey: "posture.days")
-    }
-
-    // MARK: Notifications
-
-    private func requestNotificationAuth() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
-    }
-
-    /// Names in /System/Library/Sounds — the classic macOS alert sounds.
-    static let systemSounds = [
-        "Glass", "Ping", "Tink", "Pop", "Purr", "Blow", "Bottle",
-        "Frog", "Funk", "Hero", "Morse", "Submarine", "Sosumi", "Basso",
-    ]
-
-    private let speech = AVSpeechSynthesizer()
-
-    /// Speaks the configured nudge phrase. Also used as the preview button.
-    func speakNudge() {
-        speech.stopSpeaking(at: .immediate)
-        let text = speechText.trimmingCharacters(in: .whitespacesAndNewlines)
-        speech.speak(AVSpeechUtterance(string: text.isEmpty ? "Sit up straight." : text))
-    }
-
-    private func sendNudge(after seconds: TimeInterval) {
-        nudgeCount += 1
-        flush()
-        if soundEnabled {
-            NSSound(named: soundName)?.play()
-        }
-        if speechEnabled {
-            if soundEnabled {
-                // Let the chime ring first, then speak.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
-                    self?.speakNudge()
-                }
-            } else {
-                speakNudge()
-            }
-        }
-        guard nudgesEnabled else { return }
-        let content = UNMutableNotificationContent()
-        content.title = "Posture check"
-        content.body = "You've been looking down for \(Self.timeString(seconds)). "
-            + "Straighten up and relax your shoulders."
-        content.sound = soundEnabled ? nil : .default
-        UNUserNotificationCenter.current().add(
-            UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil))
-    }
-
-    /// Show nudges even when HeadTracker is the frontmost app.
-    func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
-        willPresent notification: UNNotification,
-        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
-    ) {
-        completionHandler([.banner, .sound])
     }
 }

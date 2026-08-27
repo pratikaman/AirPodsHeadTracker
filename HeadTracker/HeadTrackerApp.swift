@@ -14,7 +14,9 @@ struct HeadTrackerApp: App {
         MenuBarExtra {
             PostureView(motion: motion, posture: motion.posture)
         } label: {
-            if motion.posture.isSlouching {
+            if motion.posture.isPaused {
+                Image(systemName: "pause.circle")
+            } else if motion.posture.isSlouching {
                 Label("\(Int(motion.posture.tiltDegrees.rounded()))°",
                       systemImage: "brain.head.profile")
             } else {

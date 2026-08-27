@@ -36,16 +36,16 @@ immune to the yaw drift that affects the 3D view.
 1. Sit tall, look at your screen, open the menu bar popover and click
    **Set Upright Posture** once.
 2. When you stay tilted past the threshold (default 15°) for longer than the
-   delay (default 60s), you get a nudge — a sound through the AirPods, a
-   spoken phrase you write yourself (TTS), a notification, or any mix
-   (toggles in the popover) — and again at the same interval while you stay
-   slouched. The menu bar icon shows the current
-   down-tilt while you're slouching.
+   delay (default 60s), a phrase you write yourself is spoken (TTS) through
+   the AirPods — and again at the same interval while you stay slouched. The
+   menu bar icon shows the current down-tilt while you're slouching.
 3. The popover tracks upright vs slouched time per day (last 7 days shown).
    Time only accumulates while the buds are in and streaming.
+4. The pause button in the popover header suspends counting and nudges (the
+   gauge stays live); the menu bar icon shows a pause badge until you resume.
 
-Threshold, delay, and nudges are configurable in the popover. Notifications
-need one-time approval (System Settings › Notifications if you declined).
+Threshold, delay, the spoken phrase, and a preview button are all in the
+popover.
 
 ## Using it
 
