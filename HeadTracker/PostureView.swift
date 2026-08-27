@@ -152,6 +152,19 @@ struct PostureView: View {
             Toggle("Notification nudges", isOn: $posture.nudgesEnabled)
                 .toggleStyle(.switch)
                 .controlSize(.small)
+            HStack {
+                Toggle("Sound nudges", isOn: $posture.soundEnabled)
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                Spacer()
+                Picker("", selection: $posture.soundName) {
+                    ForEach(PostureMonitor.systemSounds, id: \.self) { Text($0) }
+                }
+                .labelsHidden()
+                .controlSize(.small)
+                .frame(width: 110)
+                .disabled(!posture.soundEnabled)
+            }
         }
     }
 

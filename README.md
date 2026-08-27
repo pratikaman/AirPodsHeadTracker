@@ -36,7 +36,8 @@ immune to the yaw drift that affects the 3D view.
 1. Sit tall, look at your screen, open the menu bar popover and click
    **Set Upright Posture** once.
 2. When you stay tilted past the threshold (default 15°) for longer than the
-   delay (default 60s), you get a notification nudge — and again at the same
+   delay (default 60s), you get a nudge — a sound through the AirPods, a
+   notification, or both (toggles in the popover) — and again at the same
    interval while you stay slouched. The menu bar icon shows the current
    down-tilt while you're slouching.
 3. The popover tracks upright vs slouched time per day (last 7 days shown).

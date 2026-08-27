@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import UserNotifications
+import AppKit
 
 /// Watches gravity-referenced neck tilt, accumulates daily upright/slouch time,
 /// and nudges with a notification after sustained slouching.
@@ -15,6 +16,16 @@ final class PostureMonitor: NSObject, ObservableObject, UNUserNotificationCenter
         didSet {
             defaults.set(nudgesEnabled, forKey: "posture.nudgesEnabled")
             if nudgesEnabled { requestNotificationAuth() }
+        }
+    }
+    @Published var soundEnabled: Bool {
+        didSet { defaults.set(soundEnabled, forKey: "posture.soundEnabled") }
+    }
+    /// System sound used for sound nudges. Changing it plays a preview.
+    @Published var soundName: String {
+        didSet {
+            defaults.set(soundName, forKey: "posture.soundName")
+            NSSound(named: soundName)?.play()
         }
     }
     /// Degrees of down-tilt beyond the calibrated neutral that counts as slouching.
@@ -73,6 +84,8 @@ final class PostureMonitor: NSObject, ObservableObject, UNUserNotificationCenter
 
     override init() {
         nudgesEnabled = defaults.object(forKey: "posture.nudgesEnabled") as? Bool ?? true
+        soundEnabled = defaults.object(forKey: "posture.soundEnabled") as? Bool ?? true
+        soundName = defaults.string(forKey: "posture.soundName") ?? "Glass"
         thresholdDegrees = defaults.object(forKey: "posture.threshold") as? Double ?? 15
         nudgeAfterSeconds = defaults.object(forKey: "posture.nudgeAfter") as? Double ?? 60
         referenceDegrees = defaults.object(forKey: "posture.reference") as? Double
@@ -110,7 +123,7 @@ final class PostureMonitor: NSObject, ObservableObject, UNUserNotificationCenter
         }
         lastSampleAt = now
 
-        if nudgesEnabled, isSlouching,
+        if nudgesEnabled || soundEnabled, isSlouching,
            let start = slouchStartedAt,
            now.timeIntervalSince(start) >= nudgeAfterSeconds,
            now.timeIntervalSince(lastNudgeAt ?? .distantPast) >= nudgeAfterSeconds {
@@ -201,14 +214,24 @@ final class PostureMonitor: NSObject, ObservableObject, UNUserNotificationCenter
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
 
+    /// Names in /System/Library/Sounds — the classic macOS alert sounds.
+    static let systemSounds = [
+        "Glass", "Ping", "Tink", "Pop", "Purr", "Blow", "Bottle",
+        "Frog", "Funk", "Hero", "Morse", "Submarine", "Sosumi", "Basso",
+    ]
+
     private func sendNudge(after seconds: TimeInterval) {
         nudgeCount += 1
         flush()
+        if soundEnabled {
+            NSSound(named: soundName)?.play()
+        }
+        guard nudgesEnabled else { return }
         let content = UNMutableNotificationContent()
         content.title = "Posture check"
         content.body = "You've been looking down for \(Self.timeString(seconds)). "
             + "Straighten up and relax your shoulders."
-        content.sound = .default
+        content.sound = soundEnabled ? nil : .default
         UNUserNotificationCenter.current().add(
             UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil))
     }
