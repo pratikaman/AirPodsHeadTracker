@@ -30,7 +30,7 @@ from `project.yml`; if you change the file layout, re-run `xcodegen generate`.
 ## Posture coach
 
 The posture / "tech neck" coach that used to live in this app is now its own
-menu-bar app: [PostureCoach](https://github.com/pratikaman/PostureCoach).
+menu-bar app: [Posture Malone](https://github.com/pratikaman/PostureMalone).
 
 ## Using it
 
